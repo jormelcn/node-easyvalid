@@ -22,13 +22,7 @@ export interface ArrayValidator<O> extends Validator<any, TypeTemplate<any, O, a
 export interface ModelValidator<O> extends Validator<any, ModelConditions, O>{
 }
 
-export interface ModelArrayValidator<O> extends Validator<any[], ModelConditions, O[]>{
-}
-
 export interface ObjectValidator<O> extends Validator<any, FieldTemplate[], O>{
-}
-
-export interface ObjectArrayValidator<O> extends Validator<any[], FieldTemplate[] , O[]>{
 }
 
 export class ValidatorDictionary {

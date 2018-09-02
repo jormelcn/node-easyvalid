@@ -1,5 +1,5 @@
-import { ValidatorDictionary, ObjectValidator, ObjectArrayValidator, ModelValidator, ModelArrayValidator, ModelConditions, MultipleValidator, ArrayValidator } from "./validator";
-import { defaultValidators } from './default-validators';
+import { ValidatorDictionary, ModelConditions } from "./validator";
+import { valueValidators, multipleValidator, modelValidator, objectValidator, arrayValidator } from './default-validators';
 import { TypeTemplate } from "./type-template";
 import { FieldTemplate } from "./field-template";
 import { EasyError } from 'easyerror';
@@ -11,66 +11,8 @@ export class EasyValid {
   constructor(
     validators : ValidatorDictionary
   ){
-    this. validators = Object.assign(defaultValidators, validators);
-  }
-
-  multipleValidator : MultipleValidator<any> = (value, types) : any => {
-    let errorsMessages : string[] = [];
-    let out;
-    for(let j = 0; j < types.length; j++) {
-      try{
-        out = types[j].validator(value, types[j].conditions);
-        break;
-      }catch(e){
-        errorsMessages.push(e.message);
-      }
-    }
-    if(errorsMessages.length >= types.length){
-      throw new EasyError(`not satisfy conditions: \n${errorsMessages.join('\n')}`);
-    }
-    return out;
-  }
-
-  objectValidator : ObjectValidator<any> = (value, conditions) => {
-    if(typeof value !== 'object' || value instanceof Array) throw new EasyError('Value is not an Object');
-    let out = {};
-    for(let i = 0; i < conditions.length; i++){
-      let keys = conditions[i].keys;
-      let type = conditions[i].type;
-      let foundKey = null;
-      for(let j = 0; j < keys.length; j++){
-        if(keys[j] in value){
-          foundKey = keys[j];
-          break;
-        }
-      }
-      let toEvaluate, evaluationResult;
-      if(foundKey)  toEvaluate = value[foundKey];
-      try{
-        evaluationResult = type.validator(toEvaluate, type.conditions);
-        if(foundKey) out[keys[0]] = evaluationResult;
-      }catch(e){
-        e.message = `Field ${keys.join('|')} not satisfy conditions: ${e.message}`
-        throw e;
-      }
-    }
-    return out;
-  };
-
-  modelValidator : ModelValidator<any> = (value, conditions) => {
-    let object = this.objectValidator(value, conditions.template.conditions);
-    object.__proto__ = conditions.model.prototype;
-    return object;
-  }
-
-  arrayValidator : ArrayValidator<any> = (values, types) => {
-    if(!(values instanceof Array)) throw new EasyError('Value is not Array');
-    let elements = [];
-    for(let i = 0; i < values.length; i++){
-      elements.push(this.multipleValidator(values[i], types));
-    }
-    return elements;
-  }
+    this. validators = Object.assign(valueValidators, validators);
+  }  
 
   parseKeys(rawKeys : string) : string [] {
     return rawKeys.split('|');
@@ -88,7 +30,7 @@ export class EasyValid {
       typesTemplates.push(type);
     }
     return {
-      validator : this.multipleValidator,
+      validator : multipleValidator,
       conditions : typesTemplates
     };
   }
@@ -107,7 +49,7 @@ export class EasyValid {
         }
         return {
           conditions : modelConditions,
-          validator : this.modelValidator
+          validator : modelValidator
         };
     }
     else if(template instanceof Array){
@@ -117,7 +59,7 @@ export class EasyValid {
         conditions.push(this.parseTemplate(template[i]));
       }
       return  {
-        validator : this.arrayValidator,
+        validator : arrayValidator,
         conditions : conditions
       };
     }
@@ -128,7 +70,7 @@ export class EasyValid {
       }
       return {
         conditions : conditions,
-        validator : this.objectValidator
+        validator : objectValidator
       };
     }
     else{
