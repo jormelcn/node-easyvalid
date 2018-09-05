@@ -11,14 +11,14 @@ export class EasyValid {
   constructor(
     validators : ValidatorDictionary
   ){
-    this. validators = Object.assign(valueValidators, validators);
+    this. validators = Object.assign({},valueValidators, validators);
   }  
 
-  parseKeys(rawKeys : string) : string [] {
+  private parseKeys(rawKeys : string) : string [] {
     return rawKeys.split('|');
   }
 
-  parseTypes(rawTypes : string) : TypeTemplate<any, any, any> {
+  private parseTypes(rawTypes : string) : TypeTemplate<any, any, any> {
     let rawTypesSplit = rawTypes.split('|');
     let typesTemplates : TypeTemplate<any, any, any>[] = [];
     for(let i = 0; i < rawTypesSplit.length; i++) {
@@ -29,14 +29,13 @@ export class EasyValid {
       let type = new TypeTemplate<any, any, any>(validator, conditions);
       typesTemplates.push(type);
     }
-    return {
-      validator : multipleValidator,
-      conditions : typesTemplates
-    };
+    if(typesTemplates.length > 1)
+      return new TypeTemplate<any, any, any>(multipleValidator, typesTemplates);
+    else
+      return typesTemplates[0];
   }
 
-  parseTemplate(template : any) : TypeTemplate<any, any, any>{
-    let fieldTemplates = [];
+  parseTemplate(template : any) : TypeTemplate<any, any, any> {
     if(typeof template === 'string'){
       return this.parseTypes(template);
     }
@@ -47,35 +46,28 @@ export class EasyValid {
           model : template,
           template : this.parseTemplate(template.$template)
         }
-        return {
-          conditions : modelConditions,
-          validator : modelValidator
-        };
+        return new TypeTemplate<any, any, any>(modelValidator, modelConditions);
     }
     else if(template instanceof Array){
-      if(template.length < 1) throw new EasyError(`Invalid array Template`);
+      if(template.length < 1) throw new EasyError(`Invalid Array Template`);
       let conditions = [];
-      for(let i = 0; i < template.length; i++){
+      for(let i = 0; i < template.length; i++)
         conditions.push(this.parseTemplate(template[i]));
-      }
-      return  {
-        validator : arrayValidator,
-        conditions : conditions
-      };
+      return new TypeTemplate<any, any, any>(arrayValidator, conditions);
     }
     else if(typeof template === 'object') {
       let conditions : FieldTemplate[] = []
-      for(let key in template){
+      for(let key in template)
         conditions.push(new FieldTemplate(this.parseKeys(key), this.parseTemplate(template[key])));
-      }
-      return {
-        conditions : conditions,
-        validator : objectValidator
-      };
+      return new TypeTemplate<any, any, any>(objectValidator, conditions);
     }
     else{
       throw new EasyError(`Invalid Template`);
     }
+  }
+
+  validate(data : any, typeTemplate : TypeTemplate<any, any, any>) : any {
+    return typeTemplate.validator(data, typeTemplate.conditions);
   }
 
 }

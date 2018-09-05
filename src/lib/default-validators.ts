@@ -11,11 +11,14 @@ export const multipleValidator : MultipleValidator<any> = (value, types) : any =
       out = types[j].validator(value, types[j].conditions);
       break;
     }catch(e){
-      errorsMessages.push(e.message);
+      if(e instanceof EasyError)
+        errorsMessages.push(`${e.getTrace()} ${e.message}`);
+      else
+        errorsMessages.push(e.message);
     }
   }
   if(errorsMessages.length >= types.length){
-    throw new EasyError(`not satisfy conditions: \n${errorsMessages.join('\n')}`);
+    throw new EasyError(`not satisfy any conditions: {\n${errorsMessages.join('\n')}}`);
   }
   return out;
 }
@@ -39,7 +42,8 @@ export const objectValidator : ObjectValidator<any> = (value, conditions) => {
       evaluationResult = type.validator(toEvaluate, type.conditions);
       if(foundKey) out[keys[0]] = evaluationResult;
     }catch(e){
-      e.message = `Field ${keys.join('|')} not satisfy conditions: ${e.message}`
+      if(e instanceof EasyError)
+        e.addTrace(keys[0])
       throw e;
     }
   }
@@ -54,25 +58,40 @@ export const modelValidator : ModelValidator<any> = (value, conditions) => {
 
 export const arrayValidator : ArrayValidator<any> = (values, types) => {
   if(!(values instanceof Array)) throw new EasyError('Value is not Array');
-  let elements = [];
-  for(let i = 0; i < values.length; i++){
-    elements.push(this.multipleValidator(values[i], types));
+  let i = 0, elements = [];
+  try{
+    if(types.length > 1){
+      for(i = 0; i < values.length; i++)
+        elements.push(this.multipleValidator(values[i], types));  
+    } else {
+      for(i = 0; i < values.length; i++)
+        elements.push(types[0].validator(values[i], types[0].conditions));  
+    }
+  }catch(e){
+    if(e instanceof EasyError)
+      e.addTrace(`[${i}]`);
+    throw e;
   }
   return elements;
 }
 
+/*Default Value Validators*/
+
 const numericValidator : ValueValidator<number> = (value, conditions) => {
-  if(typeof value != 'number' && typeof value != 'string') throw new EasyError('Invalid Number');
+  if(typeof value != 'number' && typeof value != 'string') throw new EasyError(`Invalid Number`);
   let out = +value;
   if(isNaN(out)) throw new EasyError('Invalid Number');
   return out;
 }
 
-/*Default Value Validators*/
-
 const stringValidator : ValueValidator<string> = (value, conditions) => {
   if(typeof value != 'number' && typeof value != 'string') throw new EasyError('Invalid String');
   return ''+value;
+}
+
+const nullValidator : ValueValidator<any> = (value, conditions) => {
+  if(value !== null) throw new EasyError('Invalid Null Value');
+  return null;
 }
 
 const undefinedValidator : ValueValidator<any> = (value, conditions) => {
@@ -82,5 +101,6 @@ const undefinedValidator : ValueValidator<any> = (value, conditions) => {
 export const valueValidators : ValidatorDictionary = {
   'numeric' : numericValidator,
   'string'  : stringValidator,
-  'undef' : undefinedValidator
-}
+  'undefined' : undefinedValidator,
+  'null' : nullValidator
+};
