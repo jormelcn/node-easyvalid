@@ -1,13 +1,13 @@
 # EASYVALID
 Módulo Javasctipt/Typescript que permite validar facilmente datos en objetos con estructuras complejas.
 
-# Descripción
+## Descripción
 easyvalid permite implementar muy facilmente validaciones de datos de cualquier tipo y con cualquier clase de condiciones.
 
-# Instalación
+## Instalación
 npm install -s easyvalid
 
-# Ejemplo de Uso simple en Typescript
+## Ejemplo de Uso simple en Typescript
 
 ```Typescript
 import { EasyValid, ValueValidator} from 'easyvalid';
@@ -108,7 +108,7 @@ try {
 ```
 
 
-# Uso avanzado
+## Uso avanzado
 
 EasyValid incluye por defecto cuatro validatores : numeric, string, null, undefined
 que realizan validaciones básicas para dato numerico, cadena de caracteres, valor null y datos indefinidos.
