@@ -1,4 +1,4 @@
-# CLI
+# EASYVALID
 Módulo Javasctipt/Typescript que permite validar facilmente datos en objetos con estructuras complejas.
 
 # Descripción
