@@ -10,7 +10,7 @@ export interface ModelConditions {
   template : TypeTemplate<any, any, any>
 }
 
-export interface ValueValidator<O> extends Validator<string, string[], O> {
+export interface ValueValidator<O> extends Validator<any, string[], O> {
 } 
 
 export interface MultipleValidator<O> extends Validator<string, TypeTemplate<any, O, any>[], O> {
