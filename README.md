@@ -1,8 +1,8 @@
 # EASYVALID
-Módulo Javasctipt/Typescript que permite validar facilmente datos en objetos con estructuras complejas.
+Módulo Javascript/Typescript que permite validar fácilmente datos en objetos con estructuras complejas.
 
 ## Descripción
-easyvalid permite implementar muy facilmente validaciones de datos de cualquier tipo y con cualquier clase de condiciones.
+easyvalid permite implementar muy fácilmente validaciones de datos de cualquier tipo y con cualquier clase de condiciones.
 
 ## Instalación
 npm install -s easyvalid
@@ -68,7 +68,7 @@ const template1 = easyValid.parseTemplate(
 
 // ********************** Validamos usando la plantilla ************************
 
-//Objeto no valido
+//Objeto no válido de prueba
 const noValid = {
   edad : '20',
   porcentaje : 40,
@@ -78,7 +78,7 @@ const noValid = {
   }
 };
 
-//Objeto valido
+//Objeto válido de prueba
 const valid = {
   edad : '20',
   porcentaje : 40,
@@ -88,6 +88,7 @@ const valid = {
   }
 }
 
+//Se procede a validar
 try {
   console.log('Valid Data:');
   const validData = easyValid.validate(valid, template1);  
@@ -110,8 +111,9 @@ try {
 
 ## Uso avanzado
 
-EasyValid incluye por defecto cuatro validatores : numeric, string, null, undefined
-que realizan validaciones básicas para dato numerico, cadena de caracteres, valor null y datos indefinidos.
+EasyValid incluye por defecto cuatro validadores : numeric, string, null y undefined
+
+que realizan validaciones básicas para dato numérico, cadena de caracteres, valor null y datos indefinidos.
 los validadores por defecto y los personalizados pueden usarse en conjunto para más posibilidades de validación.
 Pueden generarse plantillas de validación de modelos complejos de datos.
 
@@ -123,7 +125,7 @@ const template2 = easyValid.parseTemplate(
   [
     {
       nombre : 'string',
-      //Pueden usarse Varios validadores, será valido si cumple con almenos uno
+      //Pueden usarse Varios validadores, será válido si cumple con al menos uno
       edad : 'number|null|undefined'
     }
   ]
@@ -132,7 +134,7 @@ const template2 = easyValid.parseTemplate(
 
 //Plantilla de un Modelo 
 class Usuario {
-  //Se debe definir $template en la clase como estático
+  //Se debe definir $template en la clase como static
   static $template = {
     nombre : 'string',
     email : 'email|undefined'
@@ -152,7 +154,7 @@ class Usuario {
 const template3 = easyValid.parseTemplate(Usuario);
 
 
-//Plantilla compleja (Puede realizarce cualquier combinación)
+//Plantilla compleja (Puede realizarse cualquier combinación)
 
 class Businessman {
   static $template = {
@@ -174,6 +176,9 @@ class Businessman {
 const template4 = easyValid.parseTemplate(Businessman);
 
 
+//***************************** Validación ********************************
+
+//Objeto válido de prueba
 const toValidate = {
   user : {
     nombre : 'Nombre del usuario',
@@ -187,12 +192,14 @@ const toValidate = {
 };
 
 
+//Proceso de validación
 try {
   console.log('Valid complex Data:');
   const validData : Businessman = easyValid.validate(toValidate, template4);  
   console.dir(validData);
   console.log()
   
+  //El objeto validado hereda los métodos del modelo
   validData.user.setEmail('email.agregado@dominio.com');
   console.dir(validData.user);
   console.log()
